@@ -237,7 +237,7 @@ export default function App() {
   useEffect(() => {
     async function GetTransactions() {
       try {
-        let data: Data = await request('http://172.20.10.3:8080/query', query)
+        let data: Data = await request('https://challenge-api.onrender.com/query', query)
         FilterTransactions(data.fetchTransactions)
 
       } catch (error) {
