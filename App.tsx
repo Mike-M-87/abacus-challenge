@@ -127,30 +127,31 @@ export default function App() {
 
       <ScrollView showsVerticalScrollIndicator={false}>
 
-        {loading || !transactions ? <ActivityIndicator /> :
+        {loading || !transactions ? <ActivityIndicator size="large" style={{ marginTop: "80%" }} /> :
           <>
             <ScrollView showsHorizontalScrollIndicator={false} horizontal style={styles.filterContainer}>
               {Object.entries(transactions).map(([k, _]: [string, any]) => (
                 <TouchableOpacity onPress={() =>
                   transactionDate == k ? setTransactionDate("") : setTransactionDate(k)
                 }
-                  key={k} style={[styles.filterOption, { backgroundColor: transactionDate == k ? "blue" : "skyblue" }]}>
+                  key={k} style={[styles.filterOption, { backgroundColor: transactionDate == k ? "cyan" : "white" }]}>
                   <Text>{k}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
 
             {Object.entries(transactions).map(([k, v]: [string, Transaction[]]) => (
-              transactionDate != "" ?
-                transactionDate == k &&
-
-                <View key={k}>
+              transactionDate != "" ? 
+              transactionDate == k &&
+                <View key={k} >
                   <View>
                     <Text style={styles.transactionHeader}>{k}</Text>
                   </View>
-                  {searcher(v).map((tx, index) => (
-                    <TransactionItem index={index} key={tx.ID} tx={tx} />
-                  ))}
+                  {
+                    searcher(v).map((tx, index) => (
+                      <TransactionItem index={index} key={tx.ID} tx={tx} />
+                    ))
+                  }
                 </View>
 
                 :
@@ -179,8 +180,8 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   filterOption: {
-    backgroundColor: "skyblue",
     borderRadius: 10,
+    borderWidth: 1,
     padding: 10,
     marginRight: 10
   },
