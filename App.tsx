@@ -141,12 +141,12 @@ export default function App() {
             </ScrollView>
 
             {Object.entries(transactions).map(([k, v]: [string, Transaction[]]) => (
-              transactionDate != "" ? 
-              transactionDate == k &&
+              transactionDate != "" ?
+                transactionDate == k &&
                 <View key={k} >
-                  <View>
-                    <Text style={styles.transactionHeader}>{k}</Text>
-                  </View>
+
+                  {searchTerm == "" && <Text style={styles.transactionHeader}>{k}</Text>}
+
                   {
                     searcher(v).map((tx, index) => (
                       <TransactionItem index={index} key={tx.ID} tx={tx} />
@@ -157,9 +157,7 @@ export default function App() {
                 :
 
                 <View key={k}>
-                  <View>
-                    <Text style={styles.transactionHeader}>{k}</Text>
-                  </View>
+                  {searchTerm == "" && <Text style={styles.transactionHeader}>{k}</Text>}
                   {searcher(v).map((tx, index) => (
                     <TransactionItem index={index} key={tx.ID} tx={tx} />
                   ))}
@@ -189,7 +187,8 @@ const styles = StyleSheet.create({
     marginVertical: 10
   },
   transactionHeader: {
-
+    marginVertical: 10,
+    fontWeight:"bold"
   },
   transactionItem: {
     flexDirection: "row",
