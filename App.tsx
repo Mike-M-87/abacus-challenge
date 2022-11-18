@@ -1,57 +1,24 @@
 
 import { StatusBar } from 'react-native';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { request, gql } from 'graphql-request'
 import { MaterialIcons } from '@expo/vector-icons';
+import { Data, Transaction } from './types/transactions';
+import { formatCash } from './constants';
+import { greyText, iconbg, optionColor, selectColor, styles } from './styles/style';
 
 
-export interface Transaction {
-  ID: string;
-  Name: string;
-  Type: string;
-  Status: string;
-  Date: Date;
-  Amount: number;
-}
-
-export interface Data {
-  fetchTransactions: Transaction[];
-}
-
-export interface RootObject {
-  data: Data;
-}
-
-function TransactionItem({ tx, index }) {
-  return (
-    <View style={styles.transactionItem}>
-      <Text>{index + 1}</Text>
-      <MaterialIcons name="payment" size={24} color="black" />
+const TransactionItem = ({ tx }) => (
+  <View style={styles.transactionItem}>
+    <View style={styles.transactionIcon}><MaterialIcons name="payment" size={30} color="black" /></View>
+    <View style={{ marginStart: 10, flexDirection: "column" }}>
       <Text>{tx.Name}</Text>
-      <Text>{tx.Status}</Text>
-      <Text>{tx.Type == "CREDIT" ? "-" : "+"}${formatCash(tx.Amount)}</Text>
+      <Text style={{ color: greyText }}>{tx.Status}</Text>
     </View>
-  )
-};
-
-
-function formatCash(cash: String) {
-  if (cash) {
-    let str = cash.toString();
-    let start = str.includes(".") ? str.length - str.indexOf(".") : 0;
-    const FT = 3;
-    if (str.length < FT || FT <= 0) {
-      return str;
-    }
-    let arr = [...str];
-    for (let i = str.length - FT - start; i > 0; i -= FT) {
-      arr.splice(i, 0, ",");
-    }
-    return arr.join("");
-  }
-  return cash;
-}
+    <Text style={{ marginStart: "auto", fontWeight: "500" }}>{tx.Type == "CREDIT" ? "-" : "+"}${formatCash(tx.Amount)}</Text>
+  </View>
+)
 
 
 
@@ -60,7 +27,6 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [transactions, setTransactions] = useState({})
   const [transactionDate, setTransactionDate] = useState<String>("")
-
 
   const query = gql`
   {
@@ -73,8 +39,6 @@ export default function App() {
       Amount
     }
   }`
-
-
 
   function searcher(arr: Transaction[]) {
     if (searchTerm == "") {
@@ -115,7 +79,7 @@ export default function App() {
 
 
   return (
-    <SafeAreaView style={{ flex: 1, marginHorizontal: 10, backgroundColor: "white", marginTop: 10 }}>
+    <SafeAreaView style={{ marginTop: 10 }}>
       <StatusBar />
 
       <TextInput
@@ -125,17 +89,16 @@ export default function App() {
         onChangeText={(value) => setSearchTerm(value)}
       />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} style={{ marginHorizontal: 10 }}>
 
         {loading || !transactions ? <ActivityIndicator size="large" style={{ marginTop: "80%" }} /> :
           <>
             <ScrollView showsHorizontalScrollIndicator={false} horizontal style={styles.filterContainer}>
               {Object.entries(transactions).map(([k, _]: [string, any]) => (
-                <TouchableOpacity onPress={() =>
-                  transactionDate == k ? setTransactionDate("") : setTransactionDate(k)
-                }
-                  key={k} style={[styles.filterOption, { backgroundColor: transactionDate == k ? "cyan" : "white" }]}>
-                  <Text>{k}</Text>
+                <TouchableOpacity onPress={() => transactionDate == k ? setTransactionDate("") : setTransactionDate(k)}
+                  key={k}
+                  style={[styles.filterOption, { backgroundColor: transactionDate == k ? selectColor : optionColor }]}>
+                  <Text style={{ color: transactionDate == k ? "rgb(230,230,230)" : "grey", fontWeight: "400" }}>{k}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -144,22 +107,18 @@ export default function App() {
               transactionDate != "" ?
                 transactionDate == k &&
                 <View key={k} >
-
                   {searchTerm == "" && <Text style={styles.transactionHeader}>{k}</Text>}
-
-                  {
-                    searcher(v).map((tx, index) => (
-                      <TransactionItem index={index} key={tx.ID} tx={tx} />
-                    ))
-                  }
+                  {searcher(v).map((tx, index) => (
+                    <TransactionItem key={tx.ID} tx={tx} />
+                  ))}
                 </View>
 
                 :
 
                 <View key={k}>
                   {searchTerm == "" && <Text style={styles.transactionHeader}>{k}</Text>}
-                  {searcher(v).map((tx, index) => (
-                    <TransactionItem index={index} key={tx.ID} tx={tx} />
+                  {searcher(v).map((tx) => (
+                    <TransactionItem key={tx.ID} tx={tx} />
                   ))}
                 </View>
 
@@ -170,34 +129,3 @@ export default function App() {
     </SafeAreaView >
   );
 }
-
-const styles = StyleSheet.create({
-  searchInput: {
-    borderWidth: 1,
-    borderColor: "black",
-    padding: 15,
-  },
-  filterOption: {
-    borderRadius: 10,
-    borderWidth: 1,
-    padding: 10,
-    marginRight: 10
-  },
-  filterContainer: {
-    marginVertical: 10
-  },
-  transactionHeader: {
-    marginVertical: 10,
-    fontWeight:"bold"
-  },
-  transactionItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "white",
-    padding: 20,
-    borderWidth: 1,
-    marginVertical: 10,
-    borderRadius: 10,
-  },
-});
