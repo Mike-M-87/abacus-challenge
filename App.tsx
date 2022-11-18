@@ -7,6 +7,7 @@ import { optionColor, selectColor, styles } from './styles/style';
 import ExpoStatusBar from 'expo-status-bar/build/ExpoStatusBar';
 import { TransactionItem } from './components/transactionItem';
 import { FetchTransactions } from './network/queries';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function App() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -15,15 +16,15 @@ export default function App() {
   const [transactionDate, setTransactionDate] = useState<String>("")
 
 
-
-  function searcher(arr: Transaction[]) {
+  //searcher return a list of trasactions that match the supplied search term
+  function filterBySearchTerm(searchTerm: string, transactionsArray: Transaction[]) {
     if (searchTerm == "") {
-      return arr
+      return transactionsArray
     }
-    return arr.filter((tx) => Object.keys(tx).some((k) => tx[k].toString().toLowerCase().includes(searchTerm.toLowerCase())))
+    return transactionsArray.filter((tx) => Object.keys(tx).some((k) => tx[k].toString().toLowerCase().includes(searchTerm.toLowerCase())))
   }
 
-  function FilterTransactions(data: Transaction[]) {
+  function FilterTransactionsFromData(data: Transaction[]) {
     let filteredTransactions = {}
     data.forEach((tx) => {
       let date = new Date(tx.Date).toDateString()
@@ -36,15 +37,14 @@ export default function App() {
     setTransactions(filteredTransactions)
   }
 
-
-
   useEffect(() => {
     async function GetTransactions() {
       setLoading(true)
       const data: Data = await FetchTransactions()
-      FilterTransactions(data.fetchTransactions);
+      FilterTransactionsFromData(data.fetchTransactions);
       setLoading(false)
     }
+
     GetTransactions()
   }, [])
 
@@ -53,15 +53,21 @@ export default function App() {
     <SafeAreaView style={{ marginTop: 10 }}>
       {Platform.OS == "ios" ? <ExpoStatusBar /> : <StatusBar />}
 
-      <TextInput
-        style={styles.searchInput}
-        value={searchTerm}
-        placeholder="Search"
-        onChangeText={(value) => {
-          setSearchTerm(value)
-          setTransactionDate("")
-        }}
-      />
+      <View style={styles.searchInput}>
+        <TextInput
+          style={{ flexGrow: 1 }}
+          value={searchTerm}
+          placeholder="Search"
+          onChangeText={(value) => {
+            setSearchTerm(value)
+            setTransactionDate("")
+          }}
+        />
+
+        <TouchableOpacity style={{ marginStart: "auto" }} onPress={() => setSearchTerm("")}>
+          <MaterialIcons name="clear" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ marginHorizontal: 10 }}>
 
@@ -83,16 +89,14 @@ export default function App() {
 
                 <View key={k} >
                   {searchTerm == "" && <Text style={styles.transactionHeader}>{k}</Text>}
-                  {searcher(v).map((tx) => (
+                  {filterBySearchTerm(searchTerm, v).map((tx) => (
                     <TransactionItem key={tx.ID} tx={tx} />
                   ))}
                 </View>
-
                 :
-
                 <View key={k}>
                   {searchTerm == "" && <Text style={styles.transactionHeader}>{k}</Text>}
-                  {searcher(v).map((tx) => (
+                  {filterBySearchTerm(searchTerm, v).map((tx) => (
                     <TransactionItem key={tx.ID} tx={tx} />
                   ))}
                 </View>

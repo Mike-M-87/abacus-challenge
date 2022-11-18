@@ -11,6 +11,7 @@ export const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 15,
         backgroundColor: optionColor,
+        flexDirection: "row", alignItems: "center", paddingHorizontal: 10
     },
     filterOption: {
         borderRadius: 10,
