@@ -1,5 +1,5 @@
 
-import { StatusBar } from 'react-native';
+import { Platform, StatusBar } from 'react-native';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { request, gql } from 'graphql-request'
@@ -7,6 +7,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Data, Transaction } from './types/transactions';
 import { formatCash } from './constants';
 import { greyText, iconbg, optionColor, selectColor, styles } from './styles/style';
+import ExpoStatusBar from 'expo-status-bar/build/ExpoStatusBar';
 
 
 const TransactionItem = ({ tx }) => (
@@ -19,7 +20,6 @@ const TransactionItem = ({ tx }) => (
     <Text style={{ marginStart: "auto", fontWeight: "500" }}>{tx.Type == "CREDIT" ? "-" : "+"}${formatCash(tx.Amount)}</Text>
   </View>
 )
-
 
 
 export default function App() {
@@ -46,7 +46,6 @@ export default function App() {
     }
     return arr.filter((tx) => Object.keys(tx).some((k) => tx[k].toString().toLowerCase().includes(searchTerm.toLowerCase())))
   }
-
 
   function FilterTransactions(data: Transaction[]) {
     let filteredTransactions = {}
@@ -80,13 +79,16 @@ export default function App() {
 
   return (
     <SafeAreaView style={{ marginTop: 10 }}>
-      <StatusBar />
+      {Platform.OS == "ios" ? <ExpoStatusBar /> : <StatusBar />}
 
       <TextInput
         style={styles.searchInput}
         value={searchTerm}
         placeholder="Search"
-        onChangeText={(value) => setSearchTerm(value)}
+        onChangeText={(value) => {
+          setSearchTerm(value)
+          setTransactionDate("")
+        }}
       />
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ marginHorizontal: 10 }}>
