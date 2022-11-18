@@ -2,25 +2,11 @@
 import { Platform, StatusBar } from 'react-native';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { request, gql } from 'graphql-request'
-import { MaterialIcons } from '@expo/vector-icons';
 import { Data, Transaction } from './types/transactions';
-import { formatCash } from './constants';
-import { greyText, iconbg, optionColor, selectColor, styles } from './styles/style';
+import { optionColor, selectColor, styles } from './styles/style';
 import ExpoStatusBar from 'expo-status-bar/build/ExpoStatusBar';
-
-
-const TransactionItem = ({ tx }) => (
-  <View style={styles.transactionItem}>
-    <View style={styles.transactionIcon}><MaterialIcons name="payment" size={30} color="black" /></View>
-    <View style={{ marginStart: 10, flexDirection: "column" }}>
-      <Text>{tx.Name}</Text>
-      <Text style={{ color: greyText }}>{tx.Status}</Text>
-    </View>
-    <Text style={{ marginStart: "auto", fontWeight: "500" }}>{tx.Type == "CREDIT" ? "-" : "+"}${formatCash(tx.Amount)}</Text>
-  </View>
-)
-
+import { TransactionItem } from './components/transactionItem';
+import { FetchTransactions } from './network/queries';
 
 export default function App() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -28,17 +14,7 @@ export default function App() {
   const [transactions, setTransactions] = useState({})
   const [transactionDate, setTransactionDate] = useState<String>("")
 
-  const query = gql`
-  {
-    fetchTransactions{
-      ID
-      Name
-      Type
-      Status
-      Date
-      Amount
-    }
-  }`
+
 
   function searcher(arr: Transaction[]) {
     if (searchTerm == "") {
@@ -60,19 +36,15 @@ export default function App() {
     setTransactions(filteredTransactions)
   }
 
-  async function GetTransactions() {
-    try {
-      setLoading(true)
-      let data: Data = await request('https://challenge-api.onrender.com/query', query)
-      FilterTransactions(data.fetchTransactions)
-    } catch (error) {
-      const errormsg = error.response?.errors[0].message
-      alert(errormsg || "Network Error");
-    }
-    setLoading(false)
-  }
+
 
   useEffect(() => {
+    async function GetTransactions() {
+      setLoading(true)
+      const data: Data = await FetchTransactions()
+      FilterTransactions(data.fetchTransactions);
+      setLoading(false)
+    }
     GetTransactions()
   }, [])
 
@@ -108,9 +80,10 @@ export default function App() {
             {Object.entries(transactions).map(([k, v]: [string, Transaction[]]) => (
               transactionDate != "" ?
                 transactionDate == k &&
+
                 <View key={k} >
                   {searchTerm == "" && <Text style={styles.transactionHeader}>{k}</Text>}
-                  {searcher(v).map((tx, index) => (
+                  {searcher(v).map((tx) => (
                     <TransactionItem key={tx.ID} tx={tx} />
                   ))}
                 </View>
