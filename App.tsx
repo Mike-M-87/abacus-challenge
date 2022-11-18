@@ -16,7 +16,7 @@ export default function App() {
   const [transactionDate, setTransactionDate] = useState<String>("")
 
 
-  //searcher return a list of trasactions that match the supplied search term
+  //filterBySearchTerm return a list of trasactions that match the supplied search term
   function filterBySearchTerm(searchTerm: string, transactionsArray: Transaction[]) {
     if (searchTerm == "") {
       return transactionsArray
