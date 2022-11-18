@@ -17,11 +17,11 @@ export default function App() {
 
 
   //filterBySearchTerm returns a list of trasactions that match the supplied search term
-  function filterBySearchTerm(searchTerm: string, transactionsArray: Transaction[]) {
+  function filterBySearchTerm( transactionsArray: Transaction[]) {
     if (searchTerm == "") {
       return transactionsArray
     }
-    transactionsArray.filter((tx) => Object.keys(tx).some((k) => tx[k].toString().toLowerCase().includes(searchTerm.toLowerCase())))
+    return transactionsArray.filter((tx) => Object.keys(tx).some((k) => tx[k].toString().toLowerCase().includes(searchTerm.toLowerCase())))
   }
 
   function FilterTransactionsFromData(data: Transaction[]) {
@@ -101,7 +101,7 @@ export default function App() {
 
                   <View key={formatedDate} >
                     {searchTerm == "" && <Text style={styles.transactionHeader}>{formatedDate}</Text>}
-                    {filterBySearchTerm(searchTerm, v).map((tx) => (
+                    {filterBySearchTerm(v).map((tx) => (
                       <TransactionItem key={tx.ID} tx={tx} />
                     ))
                     }
@@ -109,7 +109,7 @@ export default function App() {
                   :
                   <View key={formatedDate} >
                     {searchTerm == "" && <Text style={styles.transactionHeader}>{formatedDate}</Text>}
-                    {filterBySearchTerm(searchTerm, v).map((tx) => (
+                    {filterBySearchTerm(v).map((tx) => (
                       <TransactionItem key={tx.ID} tx={tx} />
                     ))
                     }
