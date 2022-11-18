@@ -16,25 +16,27 @@ export default function App() {
   const [transactionDate, setTransactionDate] = useState<String>("")
 
 
-  //filterBySearchTerm return a list of trasactions that match the supplied search term
+  //filterBySearchTerm returns a list of trasactions that match the supplied search term
   function filterBySearchTerm(searchTerm: string, transactionsArray: Transaction[]) {
     if (searchTerm == "") {
       return transactionsArray
     }
-    return transactionsArray.filter((tx) => Object.keys(tx).some((k) => tx[k].toString().toLowerCase().includes(searchTerm.toLowerCase())))
+    transactionsArray.filter((tx) => Object.keys(tx).some((k) => tx[k].toString().toLowerCase().includes(searchTerm.toLowerCase())))
   }
 
   function FilterTransactionsFromData(data: Transaction[]) {
     let filteredTransactions = {}
-    data.forEach((tx) => {
-      let date = new Date(tx.Date).toDateString()
-      if (filteredTransactions[date]) {
-        filteredTransactions[date].push(tx)
-      } else {
-        filteredTransactions[date] = Array(tx)
-      }
-    })
-    setTransactions(filteredTransactions)
+    if (data) {
+      data.forEach((tx) => {
+        let date = new Date(tx.Date).toDateString()
+        if (filteredTransactions[date]) {
+          filteredTransactions[date].push(tx)
+        } else {
+          filteredTransactions[date] = Array(tx)
+        }
+      })
+      setTransactions(filteredTransactions)
+    }
   }
 
   useEffect(() => {
@@ -54,10 +56,12 @@ export default function App() {
       {Platform.OS == "ios" ? <ExpoStatusBar /> : <StatusBar />}
 
       <View style={styles.searchInput}>
+        <MaterialIcons name="search" size={20} color="grey" />
+
         <TextInput
-          style={{ flexGrow: 1 }}
+          style={{ flexGrow: 1, marginStart: 10 }}
           value={searchTerm}
-          placeholder="Search"
+          placeholder="Search by name or type"
           onChangeText={(value) => {
             setSearchTerm(value)
             setTransactionDate("")
@@ -71,38 +75,48 @@ export default function App() {
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ marginHorizontal: 10 }}>
 
-        {loading || !transactions ? <ActivityIndicator size="large" style={{ marginTop: "80%" }} /> :
-          <>
-            <ScrollView showsHorizontalScrollIndicator={false} horizontal style={styles.filterContainer}>
-              {Object.entries(transactions).map(([k, _]: [string, any]) => (
-                <TouchableOpacity onPress={() => transactionDate == k ? setTransactionDate("") : setTransactionDate(k)}
-                  key={k}
-                  style={[styles.filterOption, { backgroundColor: transactionDate == k ? selectColor : optionColor }]}>
-                  <Text style={{ color: transactionDate == k ? "rgb(230,230,230)" : "grey", fontWeight: "400" }}>{k}</Text>
-                </TouchableOpacity>
+        {loading ? <ActivityIndicator size="large" style={{ marginTop: "80%" }} /> :
+
+          !transactions ?
+            <View style={{ justifyContent: "center", alignItems: "center", marginTop: "80%" }}>
+              <Text style={{ fontSize: 18 }}>Transactions Not Found</Text>
+            </View>
+            :
+            <>
+              <ScrollView showsHorizontalScrollIndicator={false} horizontal style={styles.filterContainer}>
+                {Object.entries(transactions).map(([k, _]: [string, any]) => (
+                  <TouchableOpacity onPress={() => transactionDate == k ? setTransactionDate("") : setTransactionDate(k)}
+                    key={k}
+                    style={[styles.filterOption, { backgroundColor: transactionDate == k ? selectColor : optionColor }]}>
+                    <Text style={{ color: transactionDate == k ? "rgb(230,230,230)" : "grey", fontWeight: "400" }}>{k}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+
+
+              {Object.entries(transactions).map(([formatedDate, v]: [string, Transaction[]]) => (
+                transactionDate != "" ?
+                  transactionDate == formatedDate &&
+
+                  <View key={formatedDate} >
+                    {searchTerm == "" && <Text style={styles.transactionHeader}>{formatedDate}</Text>}
+                    {filterBySearchTerm(searchTerm, v).map((tx) => (
+                      <TransactionItem key={tx.ID} tx={tx} />
+                    ))
+                    }
+                  </View>
+                  :
+                  <View key={formatedDate} >
+                    {searchTerm == "" && <Text style={styles.transactionHeader}>{formatedDate}</Text>}
+                    {filterBySearchTerm(searchTerm, v).map((tx) => (
+                      <TransactionItem key={tx.ID} tx={tx} />
+                    ))
+                    }
+                  </View>
+
               ))}
-            </ScrollView>
-
-            {Object.entries(transactions).map(([k, v]: [string, Transaction[]]) => (
-              transactionDate != "" ?
-                transactionDate == k &&
-
-                <View key={k} >
-                  {searchTerm == "" && <Text style={styles.transactionHeader}>{k}</Text>}
-                  {filterBySearchTerm(searchTerm, v).map((tx) => (
-                    <TransactionItem key={tx.ID} tx={tx} />
-                  ))}
-                </View>
-                :
-                <View key={k}>
-                  {searchTerm == "" && <Text style={styles.transactionHeader}>{k}</Text>}
-                  {filterBySearchTerm(searchTerm, v).map((tx) => (
-                    <TransactionItem key={tx.ID} tx={tx} />
-                  ))}
-                </View>
-
-            ))}
-          </>
+            </>
         }
       </ScrollView>
     </SafeAreaView >

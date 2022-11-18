@@ -1,6 +1,6 @@
 import request, { gql } from "graphql-request";
 
-export async function FetchTransactions() {
+export async function FetchTransactions(){
   const query = gql`
     {
       fetchTransactions {
